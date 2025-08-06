@@ -38,7 +38,7 @@ export function HeroSection() {
               <Button 
                 size="lg"
                 variant="outline"
-                className="border-white text-white hover:bg-white hover:text-ethereum font-semibold flex items-center justify-center space-x-2"
+                className="border-white hover:bg-white hover:text-ethereum font-semibold flex items-center justify-center space-x-2"
                 data-testid="button-get-eth"
               >
                 <Coins className="w-5 h-5" />
