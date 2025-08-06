@@ -94,8 +94,7 @@ export function EarthCanvas() {
     controls.enableDamping = true;
     controls.dampingFactor = 0.08;
     controls.enablePan = false;
-    controls.minDistance = 1.7;
-    controls.maxDistance = 5;
+    controls.enableZoom = false;
     controlsRef.current = controls;
 
     // Responsive resize
