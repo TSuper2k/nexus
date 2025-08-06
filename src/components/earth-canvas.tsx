@@ -14,12 +14,12 @@ export function EarthCanvas() {
   const frameId = useRef<number>();
 
   useEffect(() => {
+    let isMounted = true;
     let width = mountRef.current?.clientWidth || 400;
     let height = width;
     if (mountRef.current) {
       height = mountRef.current.clientHeight || width;
     }
-
 
     // Scene
     const scene = new THREE.Scene();
@@ -32,8 +32,9 @@ export function EarthCanvas() {
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     renderer.setSize(width, height);
     renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setClearColor(0x000000, 0); // transparent background, fix white flash
     rendererRef.current = renderer;
-    mountRef.current?.appendChild(renderer.domElement);
+    renderer.domElement.style.background = "transparent";
 
     // Light
     const ambientLight = new THREE.AmbientLight(0xffffff, 1.1);
@@ -87,8 +88,6 @@ export function EarthCanvas() {
       dots.push(dot);
     }
 
-    setIsLoading(false);
-
     // OrbitControls
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
@@ -123,13 +122,22 @@ export function EarthCanvas() {
       renderer.render(scene, camera);
       frameId.current = requestAnimationFrame(animate);
     };
-    animate();
+
+    // Mount renderer only after everything is ready
+    if (mountRef.current && isMounted) {
+      mountRef.current.appendChild(renderer.domElement);
+      setIsLoading(false);
+      animate();
+    }
 
     return () => {
+      isMounted = false;
       window.removeEventListener('resize', handleResize);
       if (rendererRef.current) {
         rendererRef.current.dispose();
-        mountRef.current?.removeChild(rendererRef.current.domElement);
+        if (mountRef.current?.contains(rendererRef.current.domElement)) {
+          mountRef.current.removeChild(rendererRef.current.domElement);
+        }
       }
       if (frameId.current) cancelAnimationFrame(frameId.current);
       geometry.dispose();
@@ -144,7 +152,7 @@ export function EarthCanvas() {
       <div
         ref={mountRef}
         className="w-full max-w-[500px] h-auto aspect-square bg-transparent rounded-full shadow-lg"
-        style={{ minHeight: 300 }}
+        style={{ minHeight: 300, visibility: isLoading ? 'hidden' : 'visible' }}
       />
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-full z-10">
