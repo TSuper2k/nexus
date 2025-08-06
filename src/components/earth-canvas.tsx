@@ -1,204 +1,154 @@
+
 import { useEffect, useRef, useState } from "react";
 
+
+import * as THREE from "three";
+// @ts-ignore
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+
 export function EarthCanvas() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const mountRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isInteracting, setIsInteracting] = useState(false);
-  const mousePos = useRef({ x: 0, y: 0 });
-  const earthRotation = useRef({ x: 0, y: 0 });
-  const animationId = useRef<number>();
+  const rendererRef = useRef<THREE.WebGLRenderer>();
+  const controlsRef = useRef<any>();
+  const frameId = useRef<number>();
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    let width = mountRef.current?.clientWidth || 400;
+    let height = width;
+    if (mountRef.current) {
+      height = mountRef.current.clientHeight || width;
+    }
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
 
-    // Set canvas size
-    const size = Math.min(500, window.innerWidth * 0.9);
-    canvas.width = size;
-    canvas.height = size;
-    canvas.style.width = `${size}px`;
-    canvas.style.height = `${size}px`;
+    // Scene
+    const scene = new THREE.Scene();
 
-    // Earth properties
-    const centerX = size / 2;
-    const centerY = size / 2;
-    const radius = size * 0.35;
-    
-    let time = 0;
+    // Camera
+    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+    camera.position.set(0, 0, 3.2);
 
-    const drawEarth = () => {
-      ctx.clearRect(0, 0, size, size);
+    // Renderer
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    rendererRef.current = renderer;
+    mountRef.current?.appendChild(renderer.domElement);
 
-      // Draw main earth sphere
-      ctx.save();
-      ctx.translate(centerX, centerY);
-      ctx.rotate(earthRotation.current.y * 0.01);
+    // Light
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.1);
+    scene.add(ambientLight);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
+    directionalLight.position.set(5, 3, 5);
+    scene.add(directionalLight);
 
-      // Create radial gradient for 3D effect
-      const gradient = ctx.createRadialGradient(
-        -radius * 0.3, -radius * 0.3, 0,
-        0, 0, radius
+    // Abstract Earth geometry & materials
+    const geometry = new THREE.SphereGeometry(1, 64, 64);
+    // Gradient-like effect: use MeshPhongMaterial with two-tone color and shininess
+    const earthMaterial = new THREE.MeshPhongMaterial({
+      color: 0x2ec7fa, // cyan blue
+      shininess: 60,
+      specular: 0xffffff,
+      emissive: 0x0a2540,
+      emissiveIntensity: 0.18,
+      transparent: false,
+    });
+    const earthMesh = new THREE.Mesh(geometry, earthMaterial);
+    scene.add(earthMesh);
+
+    // Glow/atmosphere effect (bigger sphere, low opacity)
+    const atmosphereMaterial = new THREE.MeshPhongMaterial({
+      color: 0x2ec7fa,
+      transparent: true,
+      opacity: 0.13,
+      side: THREE.BackSide,
+      shininess: 100,
+      emissive: 0x2ec7fa,
+      emissiveIntensity: 0.5,
+    });
+    const atmosphereMesh = new THREE.Mesh(new THREE.SphereGeometry(1.08, 64, 64), atmosphereMaterial);
+    scene.add(atmosphereMesh);
+
+    // Optionally: add some abstract lines or dots orbiting (decorative)
+    const dots: THREE.Mesh[] = [];
+    for (let i = 0; i < 18; i++) {
+      const dotGeo = new THREE.SphereGeometry(0.02, 16, 16);
+      const dotMat = new THREE.MeshBasicMaterial({ color: 0xffffff, opacity: 0.7, transparent: true });
+      const dot = new THREE.Mesh(dotGeo, dotMat);
+      const phi = Math.random() * Math.PI * 2;
+      const theta = Math.random() * Math.PI;
+      const r = 1.18 + Math.random() * 0.08;
+      dot.position.set(
+        r * Math.sin(theta) * Math.cos(phi),
+        r * Math.cos(theta),
+        r * Math.sin(theta) * Math.sin(phi)
       );
-      gradient.addColorStop(0, 'hsl(207, 90%, 64%)');
-      gradient.addColorStop(0.7, 'hsl(207, 90%, 54%)');
-      gradient.addColorStop(1, 'hsl(207, 90%, 34%)');
-
-      ctx.beginPath();
-      ctx.arc(0, 0, radius, 0, Math.PI * 2);
-      ctx.fillStyle = gradient;
-      ctx.fill();
-
-      // Add wireframe grid
-      ctx.strokeStyle = 'hsla(187, 95%, 43%, 0.4)';
-      ctx.lineWidth = 1;
-      
-      // Longitude lines
-      for (let i = 0; i < 8; i++) {
-        const angle = (i / 8) * Math.PI * 2 + earthRotation.current.y * 0.01;
-        const radiusX = Math.abs(radius * Math.cos(angle));
-        if (radiusX > 1) {
-          ctx.beginPath();
-          ctx.ellipse(0, 0, radiusX, radius, 0, 0, Math.PI * 2);
-          ctx.stroke();
-        }
-      }
-
-      // Latitude lines
-      for (let i = 1; i < 4; i++) {
-        const y = (radius * i) / 4;
-        const rx = Math.sqrt(Math.max(0, radius * radius - y * y));
-        
-        if (rx > 0) {
-          ctx.beginPath();
-          ctx.ellipse(0, y, rx, Math.max(1, rx * 0.2), 0, 0, Math.PI * 2);
-          ctx.stroke();
-          
-          ctx.beginPath();
-          ctx.ellipse(0, -y, rx, Math.max(1, rx * 0.2), 0, 0, Math.PI * 2);
-          ctx.stroke();
-        }
-      }
-
-      ctx.restore();
-
-      // Add floating points around earth
-      for (let i = 0; i < 20; i++) {
-        const angle = (i / 20) * Math.PI * 2 + time * 0.02;
-        const distance = radius + 50 + Math.sin(time * 0.05 + i) * 20;
-        const x = centerX + Math.cos(angle) * distance;
-        const y = centerY + Math.sin(angle) * distance;
-        
-        ctx.beginPath();
-        ctx.arc(x, y, 2, 0, Math.PI * 2);
-        ctx.fillStyle = 'hsl(187, 95%, 43%)';
-        ctx.fill();
-      }
-
-      if (!isInteracting) {
-        earthRotation.current.y += 0.01;
-      }
-      time += 0.016;
-
-      animationId.current = requestAnimationFrame(drawEarth);
-    };
+      scene.add(dot);
+      dots.push(dot);
+    }
 
     setIsLoading(false);
-    drawEarth();
+
+    // OrbitControls
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.enablePan = false;
+    controls.minDistance = 1.7;
+    controls.maxDistance = 5;
+    controlsRef.current = controls;
+
+    // Responsive resize
+    const handleResize = () => {
+      if (!mountRef.current) return;
+      const w = mountRef.current.clientWidth;
+      const h = mountRef.current.clientHeight;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    };
+    window.addEventListener('resize', handleResize);
+
+    // Animation loop
+    let t = 0;
+    const animate = () => {
+      t += 0.003;
+      earthMesh.rotation.y += 0.0012;
+      atmosphereMesh.rotation.y += 0.0007;
+      // Animate dots orbiting
+      dots.forEach((dot, i) => {
+        const speed = 0.001 + 0.0005 * i;
+        dot.position.applyAxisAngle(new THREE.Vector3(0, 1, 0), speed);
+      });
+      if (controlsRef.current) controlsRef.current.update();
+      renderer.render(scene, camera);
+      frameId.current = requestAnimationFrame(animate);
+    };
+    animate();
 
     return () => {
-      if (animationId.current) {
-        cancelAnimationFrame(animationId.current);
+      window.removeEventListener('resize', handleResize);
+      if (rendererRef.current) {
+        rendererRef.current.dispose();
+        mountRef.current?.removeChild(rendererRef.current.domElement);
       }
+      if (frameId.current) cancelAnimationFrame(frameId.current);
+      geometry.dispose();
+      atmosphereMesh.geometry.dispose();
+      dots.forEach(dot => dot.geometry.dispose());
     };
-  }, [isInteracting]);
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    setIsInteracting(true);
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (rect) {
-      mousePos.current = {
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top
-      };
-    }
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isInteracting || !canvasRef.current) return;
-
-    const rect = canvasRef.current.getBoundingClientRect();
-    const currentX = e.clientX - rect.left;
-    const currentY = e.clientY - rect.top;
-    
-    const deltaX = currentX - mousePos.current.x;
-    const deltaY = currentY - mousePos.current.y;
-    
-    earthRotation.current.y += deltaX * 0.01;
-    earthRotation.current.x += deltaY * 0.01;
-    
-    mousePos.current = { x: currentX, y: currentY };
-  };
-
-  const handleMouseUp = () => {
-    setIsInteracting(false);
-  };
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (e.touches.length === 1) {
-      setIsInteracting(true);
-      const rect = canvasRef.current?.getBoundingClientRect();
-      if (rect) {
-        mousePos.current = {
-          x: e.touches[0].clientX - rect.left,
-          y: e.touches[0].clientY - rect.top
-        };
-      }
-    }
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isInteracting || e.touches.length !== 1 || !canvasRef.current) return;
-
-    e.preventDefault();
-    const rect = canvasRef.current.getBoundingClientRect();
-    const currentX = e.touches[0].clientX - rect.left;
-    const currentY = e.touches[0].clientY - rect.top;
-    
-    const deltaX = currentX - mousePos.current.x;
-    const deltaY = currentY - mousePos.current.y;
-    
-    earthRotation.current.y += deltaX * 0.01;
-    earthRotation.current.x += deltaY * 0.01;
-    
-    mousePos.current = { x: currentX, y: currentY };
-  };
-
-  const handleTouchEnd = () => {
-    setIsInteracting(false);
-  };
+    // eslint-disable-next-line
+  }, []);
 
   return (
-    <div className="relative flex justify-center">
-      <canvas
-        ref={canvasRef}
-        data-testid="earth-canvas"
-        className="max-w-full h-auto cursor-grab active:cursor-grabbing"
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        style={{
-          background: 'transparent'
-        }}
+    <div className="relative flex justify-center items-center w-full" style={{ aspectRatio: 1 }}>
+      <div
+        ref={mountRef}
+        className="w-full max-w-[500px] h-auto aspect-square bg-transparent rounded-full shadow-lg"
+        style={{ minHeight: 300 }}
       />
       {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-full">
+        <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-full z-10">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-accent"></div>
         </div>
       )}
