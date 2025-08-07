@@ -19,10 +19,37 @@ const GlobeScene = () => {
     renderer.setClearColor(0x000000, 0);
     containerRef.current.appendChild(renderer.domElement);
 
-    // Globe với ảnh chất lượng cao
+    // Dữ liệu các kết nối giữa các lục địa (ví dụ: New York, London, Tokyo, Paris, Sydney, Cape Town)
+    const connections = [
+      { startLat: 40.7128, startLng: -74.0060, endLat: 51.5074, endLng: -0.1278 }, // New York -> London
+      { startLat: 51.5074, startLng: -0.1278, endLat: 35.6895, endLng: 139.6917 }, // London -> Tokyo
+      { startLat: 35.6895, startLng: 139.6917, endLat: -33.8688, endLng: 151.2093 }, // Tokyo -> Sydney
+      { startLat: -33.8688, startLng: 151.2093, endLat: 48.8566, endLng: 2.3522 }, // Sydney -> Paris
+      { startLat: 48.8566, startLng: 2.3522, endLat: -33.9249, endLng: 18.4241 }, // Paris -> Cape Town
+      { startLat: -33.9249, startLng: 18.4241, endLat: 40.7128, endLng: -74.0060 }, // Cape Town -> New York
+      // Thêm các đường nối mới
+      { startLat: 55.7558, startLng: 37.6173, endLat: 39.9042, endLng: 116.4074 }, // Moscow -> Beijing
+      { startLat: 39.9042, startLng: 116.4074, endLat: -23.5505, endLng: -46.6333 }, // Beijing -> Sao Paulo
+      { startLat: -23.5505, startLng: -46.6333, endLat: 34.0522, endLng: -118.2437 }, // Sao Paulo -> Los Angeles
+      { startLat: 34.0522, startLng: -118.2437, endLat: 55.7558, endLng: 37.6173 }, // Los Angeles -> Moscow
+      { startLat: 28.6139, startLng: 77.2090, endLat: 1.3521, endLng: 103.8198 }, // New Delhi -> Singapore
+      { startLat: 1.3521, startLng: 103.8198, endLat: 40.7128, endLng: -74.0060 }, // Singapore -> New York
+    ];
+
+    // Globe với ảnh chất lượng cao và các đường nối
     const globe = new Globe()
       .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
-      .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png');
+      .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
+      .arcsData(connections)
+      .arcStartLat('startLat')
+      .arcStartLng('startLng')
+      .arcEndLat('endLat')
+      .arcEndLng('endLng')
+      .arcColor(() => ['#00eaff', '#8b5cf6'])
+      .arcDashLength(0.5)
+      .arcDashGap(0.2)
+      .arcDashInitialGap(() => Math.random())
+      .arcDashAnimateTime(2000);
 
     scene.add(globe);
 
