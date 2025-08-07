@@ -93,7 +93,7 @@ const GlobeScene = () => {
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-2/3 h-16 bg-gradient-to-t from-black/40 to-transparent rounded-full blur-2xl z-0" />
       <div
         ref={containerRef}
-        className="w-full h-full rounded-full border-2 border-cyan-400/30 shadow-[0_0_60px_10px_rgba(139,92,246,0.15)] transition-transform duration-300 hover:scale-105 hover:shadow-[0_0_80px_20px_rgba(34,211,238,0.25)] bg-gradient-to-br from-cyan-500/10 via-purple-500/10 to-transparent"
+        className="mx-auto w-full h-full max-w-[500px] max-h-[500px] sm:max-w-[600px] sm:max-h-[600px] md:max-w-[700px] md:max-h-[700px] rounded-full border-2 border-cyan-400/30 shadow-[0_0_60px_10px_rgba(139,92,246,0.15)] transition-transform duration-300 hover:scale-105 hover:shadow-[0_0_80px_20px_rgba(34,211,238,0.25)] bg-gradient-to-br from-cyan-500/10 via-purple-500/10 to-transparent"
         style={{ boxShadow: "0 0 80px 10px rgba(34,211,238,0.10), 0 0 120px 20px rgba(139,92,246,0.10)" }}
       />
       {isLoading && (
