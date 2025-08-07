@@ -19,7 +19,54 @@ const GlobeScene = () => {
     renderer.setClearColor(0x000000, 0);
     containerRef.current.appendChild(renderer.domElement);
 
-    // Dữ liệu các kết nối giữa các lục địa (ví dụ: New York, London, Tokyo, Paris, Sydney, Cape Town)
+    // Các điểm vệ tinh (tọa độ ngẫu nhiên trên quỹ đạo cao hơn mặt đất)
+    const satellites = [
+      { lat: 10, lng: 30, altitude: 0.25 },
+      { lat: -20, lng: 120, altitude: 0.28 },
+      { lat: 45, lng: -60, altitude: 0.22 },
+      { lat: 60, lng: 90, altitude: 0.3 },
+      { lat: -35, lng: -100, altitude: 0.26 },
+    ];
+
+    // Các thành phố lớn (dùng lại các điểm connections)
+    const cities = [
+      { lat: 40.7128, lng: -74.0060 }, // New York
+      { lat: 51.5074, lng: -0.1278 }, // London
+      { lat: 35.6895, lng: 139.6917 }, // Tokyo
+      { lat: -33.8688, lng: 151.2093 }, // Sydney
+      { lat: 48.8566, lng: 2.3522 }, // Paris
+      { lat: -33.9249, lng: 18.4241 }, // Cape Town
+    ];
+
+    // Đường nối giữa các vệ tinh với nhau
+    const satelliteConnections = [];
+    for (let i = 0; i < satellites.length; i++) {
+      for (let j = i + 1; j < satellites.length; j++) {
+        satelliteConnections.push({
+          startLat: satellites[i].lat,
+          startLng: satellites[i].lng,
+          endLat: satellites[j].lat,
+          endLng: satellites[j].lng,
+          altitude: satellites[i].altitude,
+        });
+      }
+    }
+
+    // Đường nối giữa vệ tinh và các thành phố lớn
+    const satelliteToCityConnections: { startLat: number; startLng: number; endLat: number; endLng: number; altitude: number; }[] = [];
+    satellites.forEach(sat => {
+      cities.forEach(city => {
+        satelliteToCityConnections.push({
+          startLat: sat.lat,
+          startLng: sat.lng,
+          endLat: city.lat,
+          endLng: city.lng,
+          altitude: sat.altitude,
+        });
+      });
+    });
+
+    // Đường nối giữa các lục địa/cities như cũ
     const connections = [
       { startLat: 40.7128, startLng: -74.0060, endLat: 51.5074, endLng: -0.1278 }, // New York -> London
       { startLat: 51.5074, startLng: -0.1278, endLat: 35.6895, endLng: 139.6917 }, // London -> Tokyo
@@ -36,20 +83,34 @@ const GlobeScene = () => {
       { startLat: 1.3521, startLng: 103.8198, endLat: 40.7128, endLng: -74.0060 }, // Singapore -> New York
     ];
 
-    // Globe với ảnh chất lượng cao và các đường nối
+    // Kết hợp tất cả các đường nối
+    const allArcs = [
+      ...connections,
+      ...satelliteConnections,
+      ...satelliteToCityConnections,
+    ];
+
+    // Globe với ảnh chất lượng cao, các đường nối và các điểm vệ tinh
     const globe = new Globe()
       .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
       .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
-      .arcsData(connections)
+      .arcsData(allArcs)
       .arcStartLat('startLat')
       .arcStartLng('startLng')
       .arcEndLat('endLat')
       .arcEndLng('endLng')
-      .arcColor(() => ['#00eaff', '#8b5cf6'])
+      .arcAltitude('altitude')
+      .arcColor((d: { altitude?: number }) => d.altitude ? '#fbbf24' : '#00eaff') // vàng cho vệ tinh, xanh cho lục địa
       .arcDashLength(0.5)
       .arcDashGap(0.2)
       .arcDashInitialGap(() => Math.random())
-      .arcDashAnimateTime(2000);
+      .arcDashAnimateTime(2000)
+      .pointsData(satellites)
+      .pointLat('lat')
+      .pointLng('lng')
+      .pointAltitude('altitude')
+      .pointColor(() => '#fbbf24')
+      .pointRadius(0.6);
 
     scene.add(globe);
 
