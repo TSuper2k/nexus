@@ -20,7 +20,7 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="light" storageKey="earthchain-theme">
+      <ThemeProvider defaultTheme="dark" storageKey="earthchain-theme">
         <LanguageProvider defaultLanguage="en" storageKey="earthchain-language">
           <TooltipProvider>
             <Toaster />
