@@ -11,11 +11,19 @@ const GlobeScene = () => {
     if (!containerRef.current) return;
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, containerRef.current.clientWidth / containerRef.current.clientHeight, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      containerRef.current.clientWidth / containerRef.current.clientHeight,
+      0.1,
+      1000
+    );
     camera.position.z = 250;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
+    renderer.setSize(
+      containerRef.current.clientWidth,
+      containerRef.current.clientHeight
+    );
     renderer.setClearColor(0x000000, 0);
     containerRef.current.appendChild(renderer.domElement);
 
@@ -30,7 +38,7 @@ const GlobeScene = () => {
 
     // Các thành phố lớn (dùng lại các điểm connections)
     const cities = [
-      { lat: 40.7128, lng: -74.0060 }, // New York
+      { lat: 40.7128, lng: -74.006 }, // New York
       { lat: 51.5074, lng: -0.1278 }, // London
       { lat: 35.6895, lng: 139.6917 }, // Tokyo
       { lat: -33.8688, lng: 151.2093 }, // Sydney
@@ -53,9 +61,15 @@ const GlobeScene = () => {
     }
 
     // Đường nối giữa vệ tinh và các thành phố lớn
-    const satelliteToCityConnections: { startLat: number; startLng: number; endLat: number; endLng: number; altitude: number; }[] = [];
-    satellites.forEach(sat => {
-      cities.forEach(city => {
+    const satelliteToCityConnections: {
+      startLat: number;
+      startLng: number;
+      endLat: number;
+      endLng: number;
+      altitude: number;
+    }[] = [];
+    satellites.forEach((sat) => {
+      cities.forEach((city) => {
         satelliteToCityConnections.push({
           startLat: sat.lat,
           startLng: sat.lng,
@@ -68,19 +82,74 @@ const GlobeScene = () => {
 
     // Đường nối giữa các lục địa/cities như cũ
     const connections = [
-      { startLat: 40.7128, startLng: -74.0060, endLat: 51.5074, endLng: -0.1278 }, // New York -> London
-      { startLat: 51.5074, startLng: -0.1278, endLat: 35.6895, endLng: 139.6917 }, // London -> Tokyo
-      { startLat: 35.6895, startLng: 139.6917, endLat: -33.8688, endLng: 151.2093 }, // Tokyo -> Sydney
-      { startLat: -33.8688, startLng: 151.2093, endLat: 48.8566, endLng: 2.3522 }, // Sydney -> Paris
-      { startLat: 48.8566, startLng: 2.3522, endLat: -33.9249, endLng: 18.4241 }, // Paris -> Cape Town
-      { startLat: -33.9249, startLng: 18.4241, endLat: 40.7128, endLng: -74.0060 }, // Cape Town -> New York
+      {
+        startLat: 40.7128,
+        startLng: -74.006,
+        endLat: 51.5074,
+        endLng: -0.1278,
+      }, // New York -> London
+      {
+        startLat: 51.5074,
+        startLng: -0.1278,
+        endLat: 35.6895,
+        endLng: 139.6917,
+      }, // London -> Tokyo
+      {
+        startLat: 35.6895,
+        startLng: 139.6917,
+        endLat: -33.8688,
+        endLng: 151.2093,
+      }, // Tokyo -> Sydney
+      {
+        startLat: -33.8688,
+        startLng: 151.2093,
+        endLat: 48.8566,
+        endLng: 2.3522,
+      }, // Sydney -> Paris
+      {
+        startLat: 48.8566,
+        startLng: 2.3522,
+        endLat: -33.9249,
+        endLng: 18.4241,
+      }, // Paris -> Cape Town
+      {
+        startLat: -33.9249,
+        startLng: 18.4241,
+        endLat: 40.7128,
+        endLng: -74.006,
+      }, // Cape Town -> New York
       // Thêm các đường nối mới
-      { startLat: 55.7558, startLng: 37.6173, endLat: 39.9042, endLng: 116.4074 }, // Moscow -> Beijing
-      { startLat: 39.9042, startLng: 116.4074, endLat: -23.5505, endLng: -46.6333 }, // Beijing -> Sao Paulo
-      { startLat: -23.5505, startLng: -46.6333, endLat: 34.0522, endLng: -118.2437 }, // Sao Paulo -> Los Angeles
-      { startLat: 34.0522, startLng: -118.2437, endLat: 55.7558, endLng: 37.6173 }, // Los Angeles -> Moscow
-      { startLat: 28.6139, startLng: 77.2090, endLat: 1.3521, endLng: 103.8198 }, // New Delhi -> Singapore
-      { startLat: 1.3521, startLng: 103.8198, endLat: 40.7128, endLng: -74.0060 }, // Singapore -> New York
+      {
+        startLat: 55.7558,
+        startLng: 37.6173,
+        endLat: 39.9042,
+        endLng: 116.4074,
+      }, // Moscow -> Beijing
+      {
+        startLat: 39.9042,
+        startLng: 116.4074,
+        endLat: -23.5505,
+        endLng: -46.6333,
+      }, // Beijing -> Sao Paulo
+      {
+        startLat: -23.5505,
+        startLng: -46.6333,
+        endLat: 34.0522,
+        endLng: -118.2437,
+      }, // Sao Paulo -> Los Angeles
+      {
+        startLat: 34.0522,
+        startLng: -118.2437,
+        endLat: 55.7558,
+        endLng: 37.6173,
+      }, // Los Angeles -> Moscow
+      { startLat: 28.6139, startLng: 77.209, endLat: 1.3521, endLng: 103.8198 }, // New Delhi -> Singapore
+      {
+        startLat: 1.3521,
+        startLng: 103.8198,
+        endLat: 40.7128,
+        endLng: -74.006,
+      }, // Singapore -> New York
     ];
 
     // Kết hợp tất cả các đường nối
@@ -98,53 +167,73 @@ const GlobeScene = () => {
           lat,
           lng,
           color: "#10b981",
-          altitude: 0.001 + Math.random() * 0.01
+          altitude: 0.001 + Math.random() * 0.01,
         });
       }
     }
 
     // Globe với dot matrix, các đường nối và các điểm vệ tinh
     const globe = new Globe()
-      .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
-      .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
+      .globeImageUrl(
+        "https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
+      )
+      .bumpImageUrl(
+        "https://unpkg.com/three-globe/example/img/earth-topology.png"
+      )
       .arcsData(allArcs)
-      .arcStartLat('startLat')
-      .arcStartLng('startLng')
-      .arcEndLat('endLat')
-      .arcEndLng('endLng')
-      .arcAltitude('altitude')
-      .arcColor((d: { altitude?: number }) => d.altitude ? '#fbbf24' : '#00eaff')
+      .arcStartLat("startLat")
+      .arcStartLng("startLng")
+      .arcEndLat("endLat")
+      .arcEndLng("endLng")
+      .arcAltitude("altitude")
+      .arcColor((d: { altitude?: number }) =>
+        d.altitude ? "#fbbf24" : "#00eaff"
+      )
       .arcDashLength(0.5)
       .arcDashGap(0.2)
       .arcDashInitialGap(() => Math.random())
       .arcDashAnimateTime(2000)
       .pointsData(points)
-      .pointColor('color')
-      .pointAltitude('altitude')
+      .pointColor("color")
+      .pointAltitude("altitude")
       .pointRadius(0.15);
 
     scene.add(globe);
 
     // Glow/atmosphere effect - cyan
-    const atmosphereGeometry = new THREE.SphereGeometry(globe.getGlobeRadius() * 1.08, 75, 75);
+    const atmosphereGeometry = new THREE.SphereGeometry(
+      globe.getGlobeRadius() * 1.08,
+      75,
+      75
+    );
     const atmosphereMaterial = new THREE.MeshBasicMaterial({
       color: 0x2ec7fa,
       transparent: true,
       opacity: 0.22,
       side: THREE.BackSide,
     });
-    const atmosphereMesh = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
+    const atmosphereMesh = new THREE.Mesh(
+      atmosphereGeometry,
+      atmosphereMaterial
+    );
     scene.add(atmosphereMesh);
 
     // Glow/atmosphere effect - purple
-    const atmosphereGeometry2 = new THREE.SphereGeometry(globe.getGlobeRadius() * 1.12, 75, 75);
+    const atmosphereGeometry2 = new THREE.SphereGeometry(
+      globe.getGlobeRadius() * 1.12,
+      75,
+      75
+    );
     const atmosphereMaterial2 = new THREE.MeshBasicMaterial({
       color: 0x8b5cf6,
       transparent: true,
       opacity: 0.13,
       side: THREE.BackSide,
     });
-    const atmosphereMesh2 = new THREE.Mesh(atmosphereGeometry2, atmosphereMaterial2);
+    const atmosphereMesh2 = new THREE.Mesh(
+      atmosphereGeometry2,
+      atmosphereMaterial2
+    );
     scene.add(atmosphereMesh2);
 
     // Lights
