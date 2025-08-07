@@ -284,11 +284,11 @@ const GlobeScene = () => {
         className="w-full h-full aspect-square max-w-full max-h-full bg-transparent"
         style={{ boxShadow: "none" }}
       />
-      {isLoading && (
+      {/* {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/30 z-10">
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-cyan-400"></div>
         </div>
-      )}
+      )} */}
     </div>
   );
 };
