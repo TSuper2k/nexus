@@ -13,6 +13,10 @@ export function HeroSection() {
       className="min-h-screen flex items-center justify-center relative overflow-hidden pt-20"
     >
       <div className="absolute inset-0 gradient-bg"></div>
+      {/* GlobeScene phủ toàn bộ section, không bị che/cắt */}
+      <div className="absolute inset-0 flex items-center justify-center z-0 pointer-events-none">
+        <GlobeScene />
+      </div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Content */}
@@ -25,7 +29,6 @@ export function HeroSection() {
             <p className="text-xl lg:text-2xl text-gray-200 mb-8 leading-relaxed">
               {t('hero.subtitle')}
             </p>
-            
             {/* Action Buttons */}
             <div className="grid sm:grid-cols-2 gap-4 mb-12">
               <Button 
@@ -63,7 +66,6 @@ export function HeroSection() {
                 <span>{t('hero.startBuilding')}</span>
               </Button>
             </div>
-            
             {/* Global Stats */}
             <div className="grid grid-cols-2 gap-6 text-center">
               <div>
@@ -76,14 +78,6 @@ export function HeroSection() {
               </div>
             </div>
           </div>
-          
-          {/* Interactive Earth Canvas */}
-          {/* <div className="flex justify-center">
-            <EarthCanvas />
-          </div> */}
-          {/* <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center"> */}
-            <GlobeScene />
-          {/* </div> */}
         </div>
       </div>
     </section>
