@@ -12,7 +12,7 @@ const GlobeScene = () => {
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, containerRef.current.clientWidth / containerRef.current.clientHeight, 0.1, 1000);
-    camera.position.z = 320;
+    camera.position.z = 250;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
@@ -187,17 +187,17 @@ const GlobeScene = () => {
   }, []);
 
   return (
-    <div className="relative w-full h-[500px] sm:h-[600px] md:h-[700px] rounded-full overflow-visible bg-transparent flex items-center justify-center">
+    <div className="relative w-full aspect-square min-h-[400px] sm:min-h-[600px] md:min-h-[900px] rounded-full overflow-visible bg-transparent flex items-center justify-center">
       {/* Shadow dưới globe */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-2/3 h-16 bg-gradient-to-t from-black/40 to-transparent rounded-full blur-2xl z-0" />
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-3/4 h-16 bg-gradient-to-t from-black/30 to-transparent rounded-full blur-2xl z-0" />
       <div
         ref={containerRef}
-        className="mx-auto w-full h-full max-w-[500px] max-h-[500px] sm:max-w-[600px] sm:max-h-[600px] md:max-w-[700px] md:max-h-[700px] rounded-full border-2 border-cyan-400/30 shadow-[0_0_60px_10px_rgba(139,92,246,0.15)] transition-transform duration-300 hover:scale-105 hover:shadow-[0_0_80px_20px_rgba(34,211,238,0.25)] bg-gradient-to-br from-cyan-500/10 via-purple-500/10 to-transparent"
-        style={{ boxShadow: "0 0 80px 10px rgba(34,211,238,0.10), 0 0 120px 20px rgba(139,92,246,0.10)" }}
+        className="w-full h-full aspect-square max-w-full max-h-full bg-transparent"
+        style={{ boxShadow: "none" }}
       />
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/30 z-10">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-cyan-400"></div>
         </div>
       )}
     </div>
