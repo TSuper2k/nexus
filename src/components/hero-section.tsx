@@ -2,6 +2,7 @@ import { Wallet, Coins, Smartphone, Code } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EarthCanvas } from "@/components/earth-canvas";
 import { useLanguage } from "@/components/language-provider";
+import GlobeScene from "./globe-scene";
 
 export function HeroSection() {
   const { t } = useLanguage();
@@ -77,9 +78,12 @@ export function HeroSection() {
           </div>
           
           {/* Interactive Earth Canvas */}
-          <div className="flex justify-center">
+          {/* <div className="flex justify-center">
             <EarthCanvas />
-          </div>
+          </div> */}
+          {/* <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center"> */}
+            <GlobeScene />
+          {/* </div> */}
         </div>
       </div>
     </section>
