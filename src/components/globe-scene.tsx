@@ -90,7 +90,20 @@ const GlobeScene = () => {
       ...satelliteToCityConnections,
     ];
 
-    // Globe với ảnh chất lượng cao, các đường nối và các điểm vệ tinh
+    // Tạo hiệu ứng dot matrix phủ lên globe
+    const points = [];
+    for (let lat = -90; lat <= 90; lat += 2) {
+      for (let lng = -180; lng <= 180; lng += 2) {
+        points.push({
+          lat,
+          lng,
+          color: "#10b981",
+          altitude: 0.001 + Math.random() * 0.01
+        });
+      }
+    }
+
+    // Globe với dot matrix, các đường nối và các điểm vệ tinh
     const globe = new Globe()
       .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
       .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
@@ -100,17 +113,15 @@ const GlobeScene = () => {
       .arcEndLat('endLat')
       .arcEndLng('endLng')
       .arcAltitude('altitude')
-      .arcColor((d: { altitude?: number }) => d.altitude ? '#fbbf24' : '#00eaff') // vàng cho vệ tinh, xanh cho lục địa
+      .arcColor((d: { altitude?: number }) => d.altitude ? '#fbbf24' : '#00eaff')
       .arcDashLength(0.5)
       .arcDashGap(0.2)
       .arcDashInitialGap(() => Math.random())
       .arcDashAnimateTime(2000)
-      .pointsData(satellites)
-      .pointLat('lat')
-      .pointLng('lng')
+      .pointsData(points)
+      .pointColor('color')
       .pointAltitude('altitude')
-      .pointColor(() => '#fbbf24')
-      .pointRadius(0.6);
+      .pointRadius(0.15);
 
     scene.add(globe);
 
