@@ -4,20 +4,66 @@ import { EarthCanvas } from "@/components/earth-canvas";
 import { useLanguage } from "@/components/language-provider";
 import GlobeScene from "./globe-scene";
 import { AutoScrollBanner } from "./auto-scroll-banner";
+import React, { useEffect, useRef, useState } from "react";
+import { EarthSection } from "./earth-section";
 
 export function HeroSection() {
   const { t } = useLanguage();
+  const [globeState, setGlobeState] = useState<'hero' | 'transition' | 'earth'>('hero');
+  const [globeScale, setGlobeScale] = useState(1);
+  const globeTransitionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const hero = document.getElementById("hero");
+      const earthSection = document.getElementById("earth-section");
+      if (!hero || !earthSection) return;
+      const heroRect = hero.getBoundingClientRect();
+      const earthRect = earthSection.getBoundingClientRect();
+      // Scroll progress từ bottom của hero đến top của earthSection
+      const windowHeight = window.innerHeight;
+      const transitionStart = heroRect.bottom - windowHeight * 0.5;
+      const transitionEnd = earthRect.top - windowHeight * 0.5;
+      if (transitionEnd <= 0) {
+        setGlobeState('earth');
+        setGlobeScale(0.5);
+      } else if (transitionStart < 0) {
+        // Đang transition
+        setGlobeState('transition');
+        // Tính scale mượt mà từ 1 -> 0.5
+        const total = Math.abs(transitionEnd - transitionStart);
+        const current = Math.abs(transitionEnd);
+        const progress = Math.min(1, current / total);
+        setGlobeScale(1 - 0.5 * progress);
+      } else {
+        setGlobeState('hero');
+        setGlobeScale(1);
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <section 
-      id="hero" 
-      className="min-h-screen flex items-center justify-center relative overflow-hidden pt-20"
-    >
-      <div className="absolute inset-0 gradient-bg"></div>
-      {/* GlobeScene phủ toàn bộ section, không bị che/cắt */}
-      <div className="absolute inset-0 flex items-center justify-center z-0 pointer-events-none">
-        <GlobeScene />
-      </div>
+    <>
+      <section 
+        id="hero" 
+        className="min-h-screen flex items-center justify-center relative overflow-hidden pt-20"
+      >
+        <div className="absolute inset-0 gradient-bg"></div>
+        {/* GlobeScene phủ toàn bộ section, không bị che/cắt */}
+        {globeState !== 'earth' && (
+          <div
+            ref={globeTransitionRef}
+            className="absolute inset-0 flex items-center justify-center z-0 pointer-events-none"
+            style={{
+              transform: `scale(${globeScale})`,
+              transition: "transform 0.5s cubic-bezier(0.4,0,0.2,1)",
+            }}
+          >
+            <GlobeScene />
+          </div>
+        )}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Content */}
@@ -95,6 +141,11 @@ export function HeroSection() {
           hoverSpeed={15}
         />
       </div>
-    </section>
+      </section>
+      {/* Section mới bên dưới HeroSection */}
+      <EarthSection showGlobe={globeState === 'earth'}>
+        {globeState === 'earth' && <GlobeScene />}
+      </EarthSection>
+    </>
   );
 }

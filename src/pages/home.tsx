@@ -6,12 +6,15 @@ import { LearnSection } from "@/components/learn-section";
 import { DevelopersSection } from "@/components/developers-section";
 import { CommunitySection } from "@/components/community-section";
 import { Footer } from "@/components/footer";
+import { EarthSection } from "@/components/earth-section";
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Navigation />
       <HeroSection />
+      {/* Section mới để GlobeScene dừng lại và user tương tác */}
+      <EarthSection showGlobe={false} />
       <FeaturesSection />
       <EcosystemStats />
       <LearnSection />
