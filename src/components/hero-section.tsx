@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { EarthCanvas } from "@/components/earth-canvas";
 import { useLanguage } from "@/components/language-provider";
 import GlobeScene from "./globe-scene";
+import { AutoScrollBanner } from "./auto-scroll-banner";
 
 export function HeroSection() {
   const { t } = useLanguage();
@@ -79,6 +80,20 @@ export function HeroSection() {
             </div>
           </div>
         </div>
+      </div>
+      {/* Banner tự động chạy ở cuối section */}
+      <div className="absolute left-0 right-0 bottom-0 z-30">
+        <AutoScrollBanner
+          items={[
+            { text: "EarthChain Mainnet is live!", url: "#" },
+            { text: "160+ countries supported", url: "#" },
+            { text: "14.6M+ global users", url: "#" },
+            { text: "Build your dApp now!", url: "#" },
+            { text: "Try EarthChain Apps", url: "#" }
+          ]}
+          speed={80}
+          hoverSpeed={15}
+        />
       </div>
     </section>
   );
