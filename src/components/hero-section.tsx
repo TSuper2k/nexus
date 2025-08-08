@@ -13,7 +13,7 @@ export function HeroSection() {
       id="hero" 
       className="min-h-screen flex items-center justify-center relative overflow-hidden pt-20"
     >
-      <div className="absolute inset-0 gradient-bg"></div>
+      <div className="absolute inset-0"></div>
       {/* GlobeScene phủ toàn bộ section, không bị che/cắt */}
       <div className="absolute inset-0 flex items-center justify-center z-0 pointer-events-none">
         <GlobeScene />
