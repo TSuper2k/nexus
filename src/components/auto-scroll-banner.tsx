@@ -72,15 +72,15 @@ export const AutoScrollBanner: React.FC<AutoScrollBannerProps> = ({
   return (
     <div
       ref={containerRef}
-      className="w-full overflow-hidden bg-gradient-to-r from-cyan-500/30 to-purple-500/30 py-3"
-      style={{ position: "relative" }}
+      className="w-full overflow-hidden py-3 backdrop-blur-lg"
+      style={{ position: "relative", background: "linear-gradient(90deg, rgba(30,41,59,0.7) 0%, rgba(109,40,217,0.5) 100%)" }}
     >
       <div
         ref={contentRef}
         className="flex whitespace-nowrap gap-8 text-lg font-semibold text-white px-4"
         style={{ willChange: "transform" }}
       >
-        {items.concat(items).map((item, idx) =>
+        {items.concat(items).map((item, idx) => (
           item.url ? (
             <a
               key={idx}
@@ -103,7 +103,7 @@ export const AutoScrollBanner: React.FC<AutoScrollBannerProps> = ({
               {item.text}
             </span>
           )
-        )}
+        ))}
       </div>
     </div>
   );
