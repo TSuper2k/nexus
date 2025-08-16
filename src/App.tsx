@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import { LanguageProvider } from "@/components/language-provider";
+import { GlobeProvider } from "@/components/globe-context";
 import Home from "@/pages/home";
 import NotFound from "@/pages/not-found";
 
@@ -22,10 +23,12 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="dark" storageKey="earthchain-theme">
         <LanguageProvider defaultLanguage="en" storageKey="earthchain-language">
-          <TooltipProvider>
-            <Toaster />
-            <Router />
-          </TooltipProvider>
+          <GlobeProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Router />
+            </TooltipProvider>
+          </GlobeProvider>
         </LanguageProvider>
       </ThemeProvider>
     </QueryClientProvider>

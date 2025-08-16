@@ -2,7 +2,7 @@ import { Wallet, Coins, Smartphone, Code } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EarthCanvas } from "@/components/earth-canvas";
 import { useLanguage } from "@/components/language-provider";
-import GlobeScene from "./globe-scene";
+import LazyGlobeScene from "./lazy-globe-scene";
 import { AutoScrollBanner } from "./auto-scroll-banner";
 
 export function HeroSection() {
@@ -16,7 +16,7 @@ export function HeroSection() {
       <div className="absolute inset-0"></div>
       {/* GlobeScene phủ toàn bộ section, không bị che/cắt */}
       <div className="absolute inset-0 flex items-center justify-center z-0 pointer-events-none">
-        <GlobeScene />
+        <LazyGlobeScene className="w-full h-full" />
       </div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="relative">

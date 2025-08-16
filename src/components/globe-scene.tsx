@@ -1,46 +1,17 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import * as THREE from "three";
 import Globe from "three-globe";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
-const GlobeScene = () => {
+const GlobeScene = React.memo(() => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const sceneRef = useRef<THREE.Scene | null>(null);
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    const scene = new THREE.Scene();
-
-    // Tạo background các ngôi sao vũ trụ
-    const starGeometry = new THREE.BufferGeometry();
-    const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 1.2 });
-    const starVertices = [];
-    for (let i = 0; i < 3500; i++) {
-      const x = THREE.MathUtils.randFloatSpread(2000);
-      const y = THREE.MathUtils.randFloatSpread(2000);
-      const z = THREE.MathUtils.randFloatSpread(2000);
-      starVertices.push(x, y, z);
-    }
-    starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
-    const stars = new THREE.Points(starGeometry, starMaterial);
-    scene.add(stars);
-    const camera = new THREE.PerspectiveCamera(
-      75,
-      containerRef.current.clientWidth / containerRef.current.clientHeight,
-      0.1,
-      1000
-    );
-    camera.position.z = 250;
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(
-      containerRef.current.clientWidth,
-      containerRef.current.clientHeight
-    );
-    renderer.setClearColor(0x000000, 0);
-    containerRef.current.appendChild(renderer.domElement);
-
+  // Memoize các data để tránh tạo lại mỗi lần render
+  const sceneData = useMemo(() => {
     // Các điểm vệ tinh (tọa độ ngẫu nhiên trên quỹ đạo cao hơn mặt đất)
     const satellites = [
       { lat: 10, lng: 30, altitude: 0.25 },
@@ -186,6 +157,89 @@ const GlobeScene = () => {
       }
     }
 
+    return { allArcs, points };
+  }, []);
+
+  // Cleanup function được memoize
+  const cleanup = useCallback(() => {
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+
+    if (rendererRef.current) {
+      rendererRef.current.dispose();
+      rendererRef.current = null;
+    }
+
+    if (sceneRef.current) {
+      // Dispose tất cả geometries và materials trong scene
+      sceneRef.current.traverse((object) => {
+        if (object instanceof THREE.Mesh) {
+          if (object.geometry) {
+            object.geometry.dispose();
+          }
+          if (object.material) {
+            if (Array.isArray(object.material)) {
+              object.material.forEach(material => material.dispose());
+            } else {
+              object.material.dispose();
+            }
+          }
+        }
+      });
+      sceneRef.current = null;
+    }
+
+    // Remove DOM element
+    if (containerRef.current) {
+      const canvas = containerRef.current.querySelector('canvas');
+      if (canvas) {
+        containerRef.current.removeChild(canvas);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    // Cleanup trước khi tạo scene mới
+    cleanup();
+
+    const scene = new THREE.Scene();
+    sceneRef.current = scene;
+
+    // Tạo background các ngôi sao vũ trụ
+    const starGeometry = new THREE.BufferGeometry();
+    const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 1.2 });
+    const starVertices = [];
+    for (let i = 0; i < 3500; i++) {
+      const x = THREE.MathUtils.randFloatSpread(2000);
+      const y = THREE.MathUtils.randFloatSpread(2000);
+      const z = THREE.MathUtils.randFloatSpread(2000);
+      starVertices.push(x, y, z);
+    }
+    starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+    const stars = new THREE.Points(starGeometry, starMaterial);
+    scene.add(stars);
+
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      containerRef.current.clientWidth / containerRef.current.clientHeight,
+      0.1,
+      1000
+    );
+    camera.position.z = 250;
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    rendererRef.current = renderer;
+    renderer.setSize(
+      containerRef.current.clientWidth,
+      containerRef.current.clientHeight
+    );
+    renderer.setClearColor(0x000000, 0);
+    containerRef.current.appendChild(renderer.domElement);
+
     // Globe với dot matrix, các đường nối và các điểm vệ tinh
     const globe = new Globe()
       .globeImageUrl(
@@ -194,7 +248,7 @@ const GlobeScene = () => {
       .bumpImageUrl(
         "https://unpkg.com/three-globe/example/img/earth-topology.png"
       )
-      .arcsData(allArcs)
+      .arcsData(sceneData.allArcs)
       .arcStartLat("startLat")
       .arcStartLng("startLng")
       .arcEndLat("endLat")
@@ -207,7 +261,7 @@ const GlobeScene = () => {
       .arcDashGap(0.2)
       .arcDashInitialGap(() => Math.random())
       .arcDashAnimateTime(2000)
-      .pointsData(points)
+      .pointsData(sceneData.points)
       .pointColor("color")
       .pointAltitude("altitude")
       .pointRadius(0.15);
@@ -275,19 +329,13 @@ const GlobeScene = () => {
       atmosphereMesh.rotation.y += 0.0007;
       atmosphereMesh2.rotation.y += 0.0005;
       renderer.render(scene, camera);
-      requestAnimationFrame(animate);
+      animationFrameRef.current = requestAnimationFrame(animate);
     };
     animate();
 
-    return () => {
-      renderer.dispose();
-      if (containerRef.current?.contains(renderer.domElement)) {
-        containerRef.current.removeChild(renderer.domElement);
-      }
-      atmosphereGeometry.dispose();
-      atmosphereGeometry2.dispose();
-    };
-  }, []);
+    // Cleanup function
+    return cleanup;
+  }, [sceneData, cleanup]);
 
   return (
     <div className="relative w-full aspect-square min-h-[400px] sm:min-h-[600px] md:min-h-[900px] rounded-full overflow-visible bg-transparent flex items-center justify-center">
@@ -305,6 +353,8 @@ const GlobeScene = () => {
       )} */}
     </div>
   );
-};
+});
+
+GlobeScene.displayName = 'GlobeScene';
 
 export default GlobeScene;
